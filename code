@@ -1,0 +1,71 @@
+#import all necessary library
+library(kernlab)
+library(caret)
+library(lattice)
+library(ggplot2)
+library("readxl")# to read excel file
+animals=readxl::read_excel("/Users/ayushsinghchouhan/Downloads/animals.xlsx")
+View(animals)
+
+#KNN
+set.seed(1234)
+#partitioning
+intrain = createDataPartition(y=animals$animal_type,p=0.75,list = F)
+intrain
+training = animals[intrain,]
+#allotting data to training and testing
+testing = animals[-intrain,]
+dim(training)
+dim(testing)
+head(training)
+#Step 3 - Model creating
+modelfit1=train(animal_type~.,data = training,method="knn") 
+modelfit1
+#step 4 testing
+predictions=predict(modelfit1,newdata=testing)
+predictions
+#to remove scientific notation from confusion matrix 
+options(scipen=999)
+#confusion matrix 
+confusionMatrix(factor(predictions),factor(testing$animal_type))
+plot(predictions)#accuracy = 98%
+
+
+
+#svm
+intrain <- createDataPartition(y = animals$animal_type, p= 0.7, list = FALSE)
+training <- phising[intrain,]
+testing <- phising[-intrain,]
+dim(training)
+dim(testing)
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+svm_Linear <- train(animal_type~., data = training, method = "svmLinear", trControl=trctrl,
+                    preProcess = c("center", "scale"), tuneLength = 10)
+svm_Linear
+test_pred <- predict(svm_Linear, newdata = testing) 
+test_pred
+confusionMatrix(table(test_pred, testing$animal_type)) #Accuracy : 100
+plot(test_pred)
+
+
+
+#random forest
+set.seed(123)
+dat.d = sample(1:nrow(animals),size=nrow(animals)*0.7,replace = FALSE)
+#random selection of 70% data.
+train.animals= phising[dat.d,]
+# 70% training data 
+test.animals = phising[-dat.d,]
+# remaining 30% test data
+# Fitting a logistic regression model
+library(caret)
+library(randomForest)
+# Set a random seed
+set.seed(51)
+# Training using ‘random forest’ algorithm
+model <- train(animal_type~.,data = training,method="rf",trControl = trainControl(method = 'cv', number= 5))
+
+model                         
+test_pred2 <- predict(model, newdata = testing)
+test_pred2 #accuracy= 100%
+plot(test_pred2)
